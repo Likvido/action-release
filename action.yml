@@ -1,0 +1,78 @@
+name: "Build and deploy"
+description: "Will build and deploy the given docker application to the given container registry and Kubernetes cluster"
+inputs:
+  docker-working-directory:
+    description: 'The path to the working directory'
+    required: false
+    default: '.'
+  docker-file-relative:
+    description: 'The path to the Dockerfile relative to the docker-working-directory'
+    required: true
+  deployment-file:
+    description: 'The full path the the deployment file from the repo root'
+    required: true
+  app-name:
+    description: 'The name of the app'
+    required: true
+  kubernetes-namespace:
+    description: 'The namespace to deploy to inside the Kubernetes cluster'
+    required: false
+    default: default
+  acr-registry:
+    description: 'The name of the ACR registry to upload the image to'
+    required: true
+  aks-cluster-name:
+    description: 'The name of the AKS cluster to deploy the app to'
+    required: true
+  aks-cluster-resource-group:
+    description: 'The name of the AKS cluster resource group'
+    required: true
+  azure-service-principal-id:
+    description: 'The ID of the service principal to use when pushing the image and deploying the app'
+    required: true
+  azure-service-principal-tenant:
+    description: 'The tenant of the service principal to use when pushing the image and deploying the app'
+    required: true
+  azure-service-principal-password:
+    description: 'The password of the service principal to use when pushing the image and deploying the app'
+    required: true
+  azure-service-principal-subscription:
+    description: 'The subscription of the service principal to use when pushing the image and deploying the app'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Store image name
+      run: echo "IMAGE_NAME=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}_${{ inputs.aks-cluster-name }}:${{ github.run_number }}" >> $GITHUB_ENV
+      shell: bash
+    - name: Login to ACR
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ inputs.acr-registry }}.azurecr.io
+        username: ${{ inputs.azure-service-principal-id }}
+        password: ${{ inputs.azure-service-principal-password }}
+    - run: |
+        cd ${{ inputs.docker-working-directory }}
+        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
+        docker push ${{ env.IMAGE_NAME }}
+      shell: bash
+
+    # Deploy
+    - name: Update image in deployment
+      run: sed -i 's|<IMAGE>|${{ env.IMAGE_NAME }}|' ${{ inputs.deployment-file }}
+      shell: bash
+    - name: Azure login
+      uses: Azure/login@v1
+      with:
+        creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ inputs.azure-service-principal-subscription }}","tenantId":"${{ inputs.azure-service-principal-tenant }}"}'
+    - name: Set Kubernetes Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ inputs.aks-cluster-resource-group }}
+        cluster-name: ${{ inputs.aks-cluster-name }}
+    - name: Deploy to AKS
+      uses: Azure/k8s-deploy@v4
+      with:
+        namespace: ${{ inputs.kubernetes-namespace }}
+        manifests: |
+          ${{ inputs.deployment-file }}
