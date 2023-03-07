@@ -18,6 +18,10 @@ inputs:
     description: 'The namespace to deploy to inside the Kubernetes cluster'
     required: false
     default: default
+  force:
+    description: 'Deploy when a previous deployment already exists'
+    required: false
+    default: false
   acr-registry:
     description: 'The name of the ACR registry to upload the image to'
     required: true
@@ -73,6 +77,7 @@ runs:
     - name: Deploy to AKS
       uses: Azure/k8s-deploy@v4
       with:
+        force: ${{ inputs.force }}
         namespace: ${{ inputs.kubernetes-namespace }}
         manifests: |
           ${{ inputs.deployment-file }}
