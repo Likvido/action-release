@@ -50,7 +50,7 @@ runs:
       run: echo "IMAGE_NAME=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}_${{ inputs.aks-cluster-name }}:${{ github.run_number }}" >> $GITHUB_ENV
       shell: bash
     - name: Login to ACR
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ${{ inputs.acr-registry }}.azurecr.io
         username: ${{ inputs.azure-service-principal-id }}
