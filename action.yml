@@ -47,7 +47,7 @@ runs:
   using: "composite"
   steps:
     - name: Store image name
-      run: echo "IMAGE_NAME=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}_${{ inputs.aks-cluster-name }}:${{ github.run_number }}" >> $GITHUB_ENV
+      run: echo "IMAGE_NAME=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}_${{ inputs.aks-cluster-name }}:${{ github.sha }}" >> $GITHUB_ENV
       shell: bash
     - name: Login to ACR
       uses: docker/login-action@v2
