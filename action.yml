@@ -70,7 +70,7 @@ runs:
       with:
         creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ inputs.azure-service-principal-subscription }}","tenantId":"${{ inputs.azure-service-principal-tenant }}"}'
     - name: Set Kubernetes Context
-      uses: azure/aks-set-context@v3
+      uses: azure/aks-set-context@v4
       with:
         resource-group: ${{ inputs.aks-cluster-resource-group }}
         cluster-name: ${{ inputs.aks-cluster-name }}
