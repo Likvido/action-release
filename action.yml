@@ -53,6 +53,12 @@ inputs:
   aks-cluster-resource-group:
     description: 'The name of the AKS cluster resource group'
     required: true
+  azure-service-principal-tenant:
+    description: 'The tenant of the service principal to use when pushing the image and deploying the app'
+    required: true
+  azure-service-principal-subscription:
+    description: 'The subscription of the service principal to use when pushing the image and deploying the app'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -82,16 +88,16 @@ runs:
         environment: ${{ inputs.environment }}
         namespace: ${{ inputs.kubernetes-namespace }}
         app-name: ${{ inputs.app-name }}
-        github-app-id: ${{ secrets.github-app-id }}
-        github-app-private-key: ${{ secrets.github-app-private-key-base64 }}
-        installation-id: ${{ secrets.github-app-installation-id }}
+        github-app-id: ${{ inputs.github-app-id }}
+        github-app-private-key: ${{ inputs.github-app-private-key-base64 }}
+        installation-id: ${{ inputs.github-app-installation-id }}
         deployment-file: ${{ inputs.deployment-file }}
 
     # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
     - name: Azure login
       uses: Azure/login@v1
       with:
-        creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ secrets.AZURE_SERVICE_PRINCIPAL_SUBSCRIPTION }}","tenantId":"${{ secrets.AZURE_SERVICE_PRINCIPAL_TENANT }}"}'
+        creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ inputs.azure-service-principal-subscription }}","tenantId":"${{ inputs.azure-service-principal-tenant }}"}'
     - name: Set Kubernetes Context
       uses: azure/aks-set-context@v3
       with:
