@@ -10,20 +10,21 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build & deploy
-        uses: likvido/action-release@v1
+        uses: likvido/action-release@v3
         with:
           docker-working-directory: src
           docker-file-relative: Likvido.Project/Dockerfile
           deployment-file: src/Likvido.Project/deployment.yml
           app-name: my-app
+          environment: staging
           kubernetes-namespace: my-namespace
           acr-registry: likvido
-          aks-cluster-name: staging
-          aks-cluster-resource-group: kubernetes-staging
           azure-service-principal-id: ${{ secrets.AZURE_SERVICE_PRINCIPAL_ID }}
-          azure-service-principal-tenant: ${{ secrets.AZURE_SERVICE_PRINCIPAL_TENANT }}
           azure-service-principal-password: ${{ secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD }}
-          azure-service-principal-subscription: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SUBSCRIPTION }}
+          gitops-repo-url: 'https://github.com/Likvido/Likvido.Kubernetes'
+          github-app-id: ${{ secrets.LIKVIDO_DEPLOYMENT_PUSHER_APP_ID }}
+          github-app-private-key-base64: ${{ secrets.LIKVIDO_DEPLOYMENT_PUSHER_PRIVATE_KEY_BASE64 }}
+          github-app-installation-id: ${{ secrets.LIKVIDO_DEPLOYMENT_PUSHER_INSTALLATION_ID }}
 ```
 
 
