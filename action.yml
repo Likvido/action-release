@@ -42,6 +42,17 @@ inputs:
   github-app-installation-id:
     description: 'The installation id of the Github app to use for updating the GitOps repo'
     required: true
+  # Temp inputs
+  force:
+    description: 'Deploy when a previous deployment already exists'
+    required: false
+    default: false
+  aks-cluster-name:
+    description: 'The name of the AKS cluster to deploy the app to'
+    required: true
+  aks-cluster-resource-group:
+    description: 'The name of the AKS cluster resource group'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -75,3 +86,21 @@ runs:
         github-app-private-key: ${{ secrets.github-app-private-key-base64 }}
         installation-id: ${{ secrets.github-app-installation-id }}
         deployment-file: ${{ inputs.deployment-file }}
+
+    # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
+    - name: Azure login
+      uses: Azure/login@v1
+      with:
+        creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ secrets.AZURE_SERVICE_PRINCIPAL_SUBSCRIPTION }}","tenantId":"${{ secrets.AZURE_SERVICE_PRINCIPAL_TENANT }}"}'
+    - name: Set Kubernetes Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ inputs.aks-cluster-resource-group }}
+        cluster-name: ${{ inputs.aks-cluster-name }}
+    - name: Deploy to AKS
+      uses: Azure/k8s-deploy@v4
+      with:
+        force: ${{ inputs.force }}
+        namespace: ${{ inputs.kubernetes-namespace }}
+        manifests: |
+          ${{ inputs.deployment-file }}
