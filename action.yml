@@ -71,7 +71,8 @@ runs:
         registry: ${{ inputs.acr-registry }}.azurecr.io
         username: ${{ inputs.azure-service-principal-id }}
         password: ${{ inputs.azure-service-principal-password }}
-    - run: |
+    - name: Build & push the docker image
+      run: |
         cd ${{ inputs.docker-working-directory }}
         docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
         docker push ${{ env.IMAGE_NAME }}
