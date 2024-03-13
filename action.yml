@@ -87,7 +87,7 @@ runs:
       run: sed -i 's|<IMAGE>|${{ env.IMAGE_NAME }}|' ${{ inputs.deployment-file }}
       shell: bash
     - name: Push Deployment Update
-      uses: likvido/action-deployment-pusher@v1.2
+      uses: likvido/action-deployment-pusher@v1.3
       with:
         repo-url: ${{ inputs.gitops-repo-url }}
         environment: ${{ inputs.environment }}
@@ -97,6 +97,7 @@ runs:
         github-app-private-key: ${{ inputs.github-app-private-key-base64 }}
         installation-id: ${{ inputs.github-app-installation-id }}
         deployment-file: ${{ inputs.deployment-file }}
+        new-image-name: ${{ env.IMAGE_NAME }}
 
     # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
     - name: Azure login
