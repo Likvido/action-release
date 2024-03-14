@@ -96,7 +96,6 @@ runs:
         github-app-id: ${{ inputs.github-app-id }}
         github-app-private-key: ${{ inputs.github-app-private-key-base64 }}
         installation-id: ${{ inputs.github-app-installation-id }}
-        deployment-file: ${{ inputs.deployment-file }}
         new-image-name: ${{ env.IMAGE_NAME }}
 
     # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
