@@ -87,7 +87,7 @@ runs:
       run: sed -i 's|<IMAGE>|${{ env.IMAGE_NAME }}|' ${{ inputs.deployment-file }}
       shell: bash
     - name: Push Deployment Update
-      uses: likvido/action-deployment-pusher@v1.6
+      uses: likvido/action-deployment-pusher@v1.7
       with:
         repo-url: ${{ inputs.gitops-repo-url }}
         environment: ${{ inputs.environment }}
