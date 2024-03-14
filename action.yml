@@ -42,6 +42,9 @@ inputs:
   github-app-installation-id:
     description: 'The installation id of the Github app to use for updating the GitOps repo'
     required: true
+  gitops-deployment-file:
+    description: 'The path to a file in the GitOps repo you want to update'
+    required: false
   # Temp inputs
   force:
     description: 'Deploy when a previous deployment already exists'
@@ -87,7 +90,7 @@ runs:
       run: sed -i 's|<IMAGE>|${{ env.IMAGE_NAME }}|' ${{ inputs.deployment-file }}
       shell: bash
     - name: Push Deployment Update
-      uses: likvido/action-deployment-pusher@v2
+      uses: likvido/action-deployment-pusher@v2.1
       with:
         repo-url: ${{ inputs.gitops-repo-url }}
         environment: ${{ inputs.environment }}
@@ -97,6 +100,7 @@ runs:
         github-app-private-key: ${{ inputs.github-app-private-key-base64 }}
         installation-id: ${{ inputs.github-app-installation-id }}
         new-image-name: ${{ env.IMAGE_NAME }}
+        deployment-file: ${{ inputs.gitops-deployment-file }}
 
     # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
     - name: Azure login
