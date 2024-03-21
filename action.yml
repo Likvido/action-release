@@ -116,7 +116,7 @@ runs:
         cluster-name: ${{ inputs.aks-cluster-name }}
     - name: Deploy to AKS
       if: ${{ inputs.disable-direct-deployment != 'true' }}
-      uses: Azure/k8s-deploy@v4
+      uses: Azure/k8s-deploy@v5
       with:
         force: ${{ inputs.force }}
         namespace: ${{ inputs.kubernetes-namespace }}
