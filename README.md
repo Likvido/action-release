@@ -14,7 +14,6 @@ jobs:
         with:
           docker-working-directory: src
           docker-file-relative: Likvido.Project/Dockerfile
-          deployment-file: src/Likvido.Project/deployment.yml
           app-name: my-app
           environment: staging
           kubernetes-namespace: my-namespace

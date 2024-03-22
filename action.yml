@@ -8,9 +8,6 @@ inputs:
   docker-file-relative:
     description: 'The path to the Dockerfile relative to the docker-working-directory'
     required: true
-  deployment-file:
-    description: 'The full path the the deployment file from the repo root'
-    required: true
   app-name:
     description: 'The name of the app'
     required: true
@@ -25,10 +22,10 @@ inputs:
     description: 'The name of the ACR registry to upload the image to'
     required: true
   azure-service-principal-id:
-    description: 'The ID of the service principal to use when pushing the image and deploying the app'
+    description: 'The ID of the service principal to use when pushing the image'
     required: true
   azure-service-principal-password:
-    description: 'The password of the service principal to use when pushing the image and deploying the app'
+    description: 'The password of the service principal to use when pushing the image'
     required: true
   gitops-repo-url:
     description: 'The URL to the GitOps repo to update'
@@ -44,27 +41,6 @@ inputs:
     required: true
   gitops-deployment-file:
     description: 'The path to a file in the GitOps repo you want to update'
-    required: false
-  # Temp inputs
-  force:
-    description: 'Deploy when a previous deployment already exists'
-    required: false
-    default: false
-  aks-cluster-name:
-    description: 'The name of the AKS cluster to deploy the app to'
-    required: true
-  aks-cluster-resource-group:
-    description: 'The name of the AKS cluster resource group'
-    required: true
-  azure-service-principal-tenant:
-    description: 'The tenant of the service principal to use when pushing the image and deploying the app'
-    required: true
-  azure-service-principal-subscription:
-    description: 'The subscription of the service principal to use when pushing the image and deploying the app'
-    required: true
-  disable-direct-deployment:
-    description: 'Disable the direct deployment, which means we will only do the GitOps update'
-    default: false
     required: false
 runs:
   using: "composite"
@@ -86,9 +62,6 @@ runs:
       shell: bash
 
     # GitOps deploy
-    - name: Update image in deployment
-      run: sed -i 's|<IMAGE>|${{ env.IMAGE_NAME }}|' ${{ inputs.deployment-file }}
-      shell: bash
     - name: Push Deployment Update
       uses: likvido/action-deployment-pusher@v2.4
       with:
@@ -101,24 +74,3 @@ runs:
         installation-id: ${{ inputs.github-app-installation-id }}
         new-image-name: ${{ env.IMAGE_NAME }}
         deployment-file: ${{ inputs.gitops-deployment-file }}
-
-    # Temporarily, we still want to actually deploy here, since we have not set up the GitOps configuration completely yet
-    - name: Azure login
-      if: ${{ inputs.disable-direct-deployment != 'true' }}
-      uses: Azure/login@v1
-      with:
-        creds: '{"clientId":"${{ inputs.azure-service-principal-id }}","clientSecret":"${{ inputs.azure-service-principal-password }}","subscriptionId":"${{ inputs.azure-service-principal-subscription }}","tenantId":"${{ inputs.azure-service-principal-tenant }}"}'
-    - name: Set Kubernetes Context
-      if: ${{ inputs.disable-direct-deployment != 'true' }}
-      uses: azure/aks-set-context@v3
-      with:
-        resource-group: ${{ inputs.aks-cluster-resource-group }}
-        cluster-name: ${{ inputs.aks-cluster-name }}
-    - name: Deploy to AKS
-      if: ${{ inputs.disable-direct-deployment != 'true' }}
-      uses: Azure/k8s-deploy@v4
-      with:
-        force: ${{ inputs.force }}
-        namespace: ${{ inputs.kubernetes-namespace }}
-        manifests: |
-          ${{ inputs.deployment-file }}
