@@ -63,7 +63,7 @@ runs:
 
     # GitOps deploy
     - name: Push Deployment Update
-      uses: likvido/action-deployment-pusher@v2.4
+      uses: likvido/action-deployment-pusher@v2.5
       with:
         repo-url: ${{ inputs.gitops-repo-url }}
         environment: ${{ inputs.environment }}
