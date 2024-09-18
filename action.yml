@@ -55,11 +55,31 @@ runs:
         username: ${{ inputs.azure-service-principal-id }}
         password: ${{ inputs.azure-service-principal-password }}
     - name: Build & push the docker image
-      run: |
-        cd ${{ inputs.docker-working-directory }}
-        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
-        docker push ${{ env.IMAGE_NAME }}
       shell: bash
+      run: |
+        max_attempts=3
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt of $max_attempts"
+          
+          cd ${{ inputs.docker-working-directory }}
+          if docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} . && \
+            docker push ${{ env.IMAGE_NAME }}; then
+            echo "Build and push successful"
+            exit 0
+          else
+            echo "Build or push failed"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "All attempts exhausted"
+              exit 1
+            fi
+          fi
+          
+          attempt=$((attempt+1))
+          echo "Retrying in 3 seconds..."
+          sleep 3
+        done
 
     # GitOps deploy
     - name: Push Deployment Update
