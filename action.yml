@@ -54,32 +54,73 @@ runs:
         registry: ${{ inputs.acr-registry }}.azurecr.io
         username: ${{ inputs.azure-service-principal-id }}
         password: ${{ inputs.azure-service-principal-password }}
-    - name: Build & push the docker image
-      shell: bash
+    
+    - name: Build & push the docker image (Attempt 1)
+      id: build_push_1
+      continue-on-error: true
       run: |
-        max_attempts=3
-        attempt=1
+        echo "--- Debug Info for Attempt 1 ---"
+        echo "Current directory: $(pwd)"
+        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
+        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
+        echo "Image name: ${{ env.IMAGE_NAME }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of Docker working directory:"
+        ls -la ${{ inputs.docker-working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
         
-        while [ $attempt -le $max_attempts ]; do
-          echo "Attempt $attempt of $max_attempts"
-          
-          cd ${{ inputs.docker-working-directory }}
-          if docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} . && \
-            docker push ${{ env.IMAGE_NAME }}; then
-            echo "Build and push successful"
-            exit 0
-          else
-            echo "Build or push failed"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts exhausted"
-              exit 1
-            fi
-          fi
-          
-          attempt=$((attempt+1))
-          echo "Retrying in 3 seconds..."
-          sleep 3
-        done
+        cd ${{ inputs.docker-working-directory }}
+        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
+        docker push ${{ env.IMAGE_NAME }}
+      shell: bash
+
+    - name: Build & push the docker image (Attempt 2)
+      id: build_push_2
+      if: steps.build_push_1.outcome == 'failure'
+      continue-on-error: true
+      run: |
+        echo "--- Debug Info for Attempt 2 ---"
+        echo "Current directory: $(pwd)"
+        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
+        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
+        echo "Image name: ${{ env.IMAGE_NAME }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of Docker working directory:"
+        ls -la ${{ inputs.docker-working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
+        
+        cd ${{ inputs.docker-working-directory }}
+        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
+        docker push ${{ env.IMAGE_NAME }}
+      shell: bash
+
+    - name: Build & push the docker image (Attempt 3)
+      id: build_push_3
+      if: steps.build_push_2.outcome == 'failure'
+      run: |
+        echo "--- Debug Info for Attempt 3 ---"
+        echo "Current directory: $(pwd)"
+        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
+        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
+        echo "Image name: ${{ env.IMAGE_NAME }}"
+        echo "Listing contents of current directory:"
+        ls -la
+        echo "Listing contents of Docker working directory:"
+        ls -la ${{ inputs.docker-working-directory }}
+        echo "Docker version:"
+        docker --version
+        echo "--- End Debug Info ---"
+        
+        cd ${{ inputs.docker-working-directory }}
+        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
+        docker push ${{ env.IMAGE_NAME }}
+      shell: bash
 
     # GitOps deploy
     - name: Push Deployment Update
