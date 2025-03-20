@@ -59,19 +59,6 @@ runs:
       id: build_push_1
       continue-on-error: true
       run: |
-        echo "--- Debug Info for Attempt 1 ---"
-        echo "Current directory: $(pwd)"
-        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
-        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
-        echo "Image name: ${{ env.IMAGE_NAME }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of Docker working directory:"
-        ls -la ${{ inputs.docker-working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
         cd ${{ inputs.docker-working-directory }}
         docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
         docker push ${{ env.IMAGE_NAME }}
@@ -82,19 +69,6 @@ runs:
       if: steps.build_push_1.outcome == 'failure'
       continue-on-error: true
       run: |
-        echo "--- Debug Info for Attempt 2 ---"
-        echo "Current directory: $(pwd)"
-        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
-        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
-        echo "Image name: ${{ env.IMAGE_NAME }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of Docker working directory:"
-        ls -la ${{ inputs.docker-working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
         cd ${{ inputs.docker-working-directory }}
         docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
         docker push ${{ env.IMAGE_NAME }}
@@ -104,19 +78,6 @@ runs:
       id: build_push_3
       if: steps.build_push_2.outcome == 'failure'
       run: |
-        echo "--- Debug Info for Attempt 3 ---"
-        echo "Current directory: $(pwd)"
-        echo "Docker working directory: ${{ inputs.docker-working-directory }}"
-        echo "Dockerfile relative path: ${{ inputs.docker-file-relative }}"        
-        echo "Image name: ${{ env.IMAGE_NAME }}"
-        echo "Listing contents of current directory:"
-        ls -la
-        echo "Listing contents of Docker working directory:"
-        ls -la ${{ inputs.docker-working-directory }}
-        echo "Docker version:"
-        docker --version
-        echo "--- End Debug Info ---"
-        
         cd ${{ inputs.docker-working-directory }}
         docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
         docker push ${{ env.IMAGE_NAME }}
