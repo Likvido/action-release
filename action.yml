@@ -55,32 +55,29 @@ runs:
         username: ${{ inputs.azure-service-principal-id }}
         password: ${{ inputs.azure-service-principal-password }}
     
-    - name: Build & push the docker image (Attempt 1)
-      id: build_push_1
-      continue-on-error: true
+    - name: Build & push the docker image with retries
+      id: build_push
       run: |
         cd ${{ inputs.docker-working-directory }}
-        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
-        docker push ${{ env.IMAGE_NAME }}
-      shell: bash
-
-    - name: Build & push the docker image (Attempt 2)
-      id: build_push_2
-      if: steps.build_push_1.outcome == 'failure'
-      continue-on-error: true
-      run: |
-        cd ${{ inputs.docker-working-directory }}
-        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
-        docker push ${{ env.IMAGE_NAME }}
-      shell: bash
-
-    - name: Build & push the docker image (Attempt 3)
-      id: build_push_3
-      if: steps.build_push_2.outcome == 'failure'
-      run: |
-        cd ${{ inputs.docker-working-directory }}
-        docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} .
-        docker push ${{ env.IMAGE_NAME }}
+        max_attempts=3
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt of $max_attempts"
+          if docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} . && docker push ${{ env.IMAGE_NAME }}; then
+            echo "Docker build and push succeeded on attempt $attempt"
+            exit 0
+          else
+            echo "Docker build or push failed on attempt $attempt"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "All attempts failed. Exiting with error."
+              exit 1
+            fi
+          fi
+          attempt=$((attempt+1))
+          echo "Waiting 10 seconds before retrying..."
+          sleep 10
+        done
       shell: bash
 
     # GitOps deploy
