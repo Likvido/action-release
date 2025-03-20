@@ -55,7 +55,10 @@ runs:
         username: ${{ inputs.azure-service-principal-id }}
         password: ${{ inputs.azure-service-principal-password }}
     
-    - name: Build & push the docker image with retries
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build & push multi-architecture Docker image with retries
       id: build_push
       run: |
         cd ${{ inputs.docker-working-directory }}
@@ -64,11 +67,15 @@ runs:
         
         while [ $attempt -le $max_attempts ]; do
           echo "Attempt $attempt of $max_attempts"
-          if docker build -t ${{ env.IMAGE_NAME }} -f ${{ inputs.docker-file-relative }} . && docker push ${{ env.IMAGE_NAME }}; then
-            echo "Docker build and push succeeded on attempt $attempt"
+          if docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag ${{ env.IMAGE_NAME }} \
+            --file ${{ inputs.docker-file-relative }} \
+            --push .; then
+            echo "Docker multi-arch build and push succeeded on attempt $attempt"
             exit 0
           else
-            echo "Docker build or push failed on attempt $attempt"
+            echo "Docker multi-arch build or push failed on attempt $attempt"
             if [ $attempt -eq $max_attempts ]; then
               echo "All attempts failed. Exiting with error."
               exit 1
