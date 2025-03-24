@@ -59,17 +59,13 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-
-    - name: Build & push multi-architecture Docker image
+    - name: Build & push Docker image
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.docker-working-directory }}
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
         push: true
         tags: ${{ env.IMAGE_NAME }}
-        platforms: linux/amd64,linux/arm64
 
     # GitOps deploy
     - name: Push Deployment Update
