@@ -42,10 +42,6 @@ inputs:
   gitops-deployment-file:
     description: 'The path to a file in the GitOps repo you want to update'
     required: false
-  nuget-source:
-    description: 'Optional NuGet package source URL (e.g., BaGetter cache server). When provided, this source will be used exclusively for .NET builds.'
-    required: false
-    default: ''
 runs:
   using: "composite"
   steps:
@@ -71,7 +67,7 @@ runs:
         push: true
         tags: ${{ env.IMAGE_NAME }}
         build-args: |
-          NUGET_SOURCE=${{ inputs.nuget-source }}
+          NUGET_SOURCE=${{ env.NUGET_SOURCE }}
 
     # GitOps deploy
     - name: Push Deployment Update
