@@ -7,6 +7,7 @@ This action builds Docker images and deploys them via GitOps to Kubernetes clust
 - ✅ Builds and pushes Docker images to Azure Container Registry
 - ✅ Automatically updates GitOps repository with new image tags
 - ✅ Supports custom deployment file paths for complex deployments
+- ✅ Optional registry-based build cache for faster builds
 
 ## Usage
 
@@ -35,11 +36,26 @@ jobs:
           github-app-private-key-base64: ${{ secrets.LIKVIDO_DEPLOYMENT_PUSHER_PRIVATE_KEY_BASE64 }}
           github-app-installation-id: ${{ secrets.LIKVIDO_DEPLOYMENT_PUSHER_INSTALLATION_ID }}
           gitops-deployment-file: 'my/deployment/file.yaml'
+          use-registry-cache: 'true'  # Optional: Enable ACR build cache
 ```
 
 ## Inputs
 
 See `action.yml` for all available inputs.
+
+### Registry Build Cache (Optional)
+
+To enable faster builds using Azure Container Registry as a build cache, set `use-registry-cache: 'true'`:
+
+```yaml
+- name: Build & deploy
+  uses: likvido/action-release@v3
+  with:
+    # ... other inputs ...
+    use-registry-cache: 'true'
+```
+
+The cache is scoped per application (using `app-name`) and is shared between PR builds and release builds for optimal performance.
 
 # Releasing new version
 
