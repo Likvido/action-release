@@ -55,7 +55,7 @@ To enable faster builds using Azure Container Registry as a build cache, set `us
     use-registry-cache: 'true'
 ```
 
-The cache is scoped per application (using `app-name`) and is shared between PR builds and release builds for optimal performance.
+The cache is scoped per application using the `app-name` input.
 
 # Releasing new version
 
