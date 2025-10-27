@@ -59,10 +59,6 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Capture NUGET_SOURCE from environment
-      run: echo "NUGET_SOURCE_VALUE=${NUGET_SOURCE:-}" >> $GITHUB_ENV
-      shell: bash
-
     - name: Build & push Docker image
       uses: docker/build-push-action@v6
       with:
@@ -70,8 +66,6 @@ runs:
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
         push: true
         tags: ${{ env.IMAGE_NAME }}
-        build-args: |
-          NUGET_SOURCE=${{ env.NUGET_SOURCE_VALUE }}
 
     # GitOps deploy
     - name: Push Deployment Update
