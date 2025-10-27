@@ -63,15 +63,25 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build & push Docker image
+    - name: Build & push Docker image (with cache)
+      if: inputs.use-registry-cache == 'true'
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.docker-working-directory }}
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
         push: true
         tags: ${{ env.IMAGE_NAME }}
-        cache-from: ${{ inputs.use-registry-cache == 'true' && format('type=registry,ref={0}.azurecr.io/{1}:buildcache', inputs.acr-registry, inputs.app-name) || '' }}
-        cache-to: ${{ inputs.use-registry-cache == 'true' && format('type=registry,ref={0}.azurecr.io/{1}:buildcache,mode=max', inputs.acr-registry, inputs.app-name) || '' }}
+        cache-from: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache,mode=max
+
+    - name: Build & push Docker image (no cache)
+      if: inputs.use-registry-cache != 'true'
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.docker-working-directory }}
+        file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
+        push: true
+        tags: ${{ env.IMAGE_NAME }}
 
     # GitOps deploy
     - name: Push Deployment Update
