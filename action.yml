@@ -42,6 +42,10 @@ inputs:
   gitops-deployment-file:
     description: 'The path to a file in the GitOps repo you want to update'
     required: false
+  use-registry-cache:
+    description: 'Enable registry-based build cache for faster builds'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -66,6 +70,8 @@ runs:
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
         push: true
         tags: ${{ env.IMAGE_NAME }}
+        cache-from: ${{ inputs.use-registry-cache == 'true' && format('type=registry,ref={0}.azurecr.io/{1}:buildcache', inputs.acr-registry, inputs.app-name) || '' }}
+        cache-to: ${{ inputs.use-registry-cache == 'true' && format('type=registry,ref={0}.azurecr.io/{1}:buildcache,mode=max', inputs.acr-registry, inputs.app-name) || '' }}
 
     # GitOps deploy
     - name: Push Deployment Update
