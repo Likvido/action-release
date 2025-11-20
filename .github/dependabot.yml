@@ -4,3 +4,9 @@ updates:
     directory: /
     schedule:
       interval: daily
+
+    # Group all dependencies into a single PR
+    groups:
+      github-actions:
+        patterns:
+          - "*"
