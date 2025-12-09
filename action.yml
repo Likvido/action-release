@@ -72,7 +72,7 @@ runs:
         push: true
         tags: ${{ env.IMAGE_NAME }}
         cache-from: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache
-        cache-to: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache,mode=max
+        cache-to: type=registry,ref=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}:buildcache,mode=max,ignore-error=true
 
     - name: Build & push Docker image (no cache)
       if: inputs.use-registry-cache != 'true'
