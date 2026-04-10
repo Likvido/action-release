@@ -50,7 +50,12 @@ runs:
   using: "composite"
   steps:
     - name: Store image name
-      run: echo "IMAGE_NAME=${{ inputs.acr-registry }}.azurecr.io/${{ inputs.app-name }}_${{ inputs.environment }}:${{ github.sha }}" >> $GITHUB_ENV
+      env:
+        ACR_REGISTRY: ${{ inputs.acr-registry }}
+        APP_NAME: ${{ inputs.app-name }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        SHA: ${{ github.sha }}
+      run: echo "IMAGE_NAME=$ACR_REGISTRY.azurecr.io/${APP_NAME}_${ENVIRONMENT}:$SHA" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Login to ACR
