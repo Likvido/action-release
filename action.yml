@@ -55,7 +55,7 @@ runs:
         APP_NAME: ${{ inputs.app-name }}
         ENVIRONMENT: ${{ inputs.environment }}
         SHA: ${{ github.sha }}
-      run: echo "IMAGE_NAME=$ACR_REGISTRY.azurecr.io/${APP_NAME}_${ENVIRONMENT}:$SHA" >> $GITHUB_ENV
+      run: echo "IMAGE_NAME=$ACR_REGISTRY.azurecr.io/${APP_NAME}_${ENVIRONMENT}:$SHA" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Login to ACR
