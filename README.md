@@ -8,6 +8,7 @@ This action builds Docker images and deploys them via GitOps to Kubernetes clust
 - ✅ Automatically updates GitOps repository with new image tags
 - ✅ Supports custom deployment file paths for complex deployments
 - ✅ Optional registry-based build cache for faster builds
+- ✅ Retries the container registry login, so a throttled sign-in does not fail the deploy
 
 ## Usage
 
@@ -18,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Build & deploy
-        uses: likvido/action-release@v3
+        uses: likvido/action-release@v3.15
         with:
           docker-working-directory: src
           docker-file-relative: Likvido.Project/Dockerfile
@@ -49,7 +50,7 @@ To enable faster builds using Azure Container Registry as a build cache, set `us
 
 ```yaml
 - name: Build & deploy
-  uses: likvido/action-release@v3
+  uses: likvido/action-release@v3.15
   with:
     # ... other inputs ...
     use-registry-cache: 'true'
@@ -71,3 +72,11 @@ Either create the new release + new version tag directly in the Github UI, or cr
 git tag -a -m "First version" v1
 git push --follow-tags
 ```
+
+Pin exact versions when consuming this action. The floating `v3` tag is not maintained and
+still points at an old commit.
+
+A new version does not reach the apps on its own. After tagging, bump the reference in the
+consumers, the main one being
+[action-deployment-pipeline](https://github.com/Likvido/action-deployment-pipeline), and tag
+that. Dependabot then rolls the new pipeline version into `Likvido.App` and the other repos.
