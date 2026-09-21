@@ -58,7 +58,42 @@ runs:
       run: echo "IMAGE_NAME=$ACR_REGISTRY.azurecr.io/${APP_NAME}_${ENVIRONMENT}:$SHA" >> "$GITHUB_ENV"
       shell: bash
 
+    # A release fans out to ~100 jobs that all hit the registry token endpoint at once,
+    # and the registry is on the Basic tier, so a few sign-ins get throttled and time out.
+    # docker/login-action has no retry of its own, so retry it here - see
+    # Likvido/Likvido.App#28409.
     - name: Login to ACR
+      id: acr-login
+      continue-on-error: true
+      uses: docker/login-action@v4.6.0
+      with:
+        registry: ${{ inputs.acr-registry }}.azurecr.io
+        username: ${{ inputs.azure-service-principal-id }}
+        password: ${{ inputs.azure-service-principal-password }}
+
+    - name: Wait before retrying ACR login
+      if: steps.acr-login.outcome == 'failure'
+      run: sleep $((5 + RANDOM % 10))
+      shell: bash
+
+    - name: Login to ACR (retry 1)
+      id: acr-login-retry-1
+      if: steps.acr-login.outcome == 'failure'
+      continue-on-error: true
+      uses: docker/login-action@v4.6.0
+      with:
+        registry: ${{ inputs.acr-registry }}.azurecr.io
+        username: ${{ inputs.azure-service-principal-id }}
+        password: ${{ inputs.azure-service-principal-password }}
+
+    - name: Wait before the final ACR login attempt
+      if: steps.acr-login.outcome == 'failure' && steps.acr-login-retry-1.outcome == 'failure'
+      run: sleep $((15 + RANDOM % 15))
+      shell: bash
+
+    # No continue-on-error here: if this one fails, the deploy should fail.
+    - name: Login to ACR (retry 2)
+      if: steps.acr-login.outcome == 'failure' && steps.acr-login-retry-1.outcome == 'failure'
       uses: docker/login-action@v4.6.0
       with:
         registry: ${{ inputs.acr-registry }}.azurecr.io
