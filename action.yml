@@ -106,6 +106,8 @@ runs:
     - name: Build & push Docker image (with cache)
       if: inputs.use-registry-cache == 'true'
       uses: docker/build-push-action@v7
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: 'false'
       with:
         context: ${{ inputs.docker-working-directory }}
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
@@ -117,6 +119,8 @@ runs:
     - name: Build & push Docker image (no cache)
       if: inputs.use-registry-cache != 'true'
       uses: docker/build-push-action@v7
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: 'false'
       with:
         context: ${{ inputs.docker-working-directory }}
         file: ${{ inputs.docker-working-directory }}/${{ inputs.docker-file-relative }}
